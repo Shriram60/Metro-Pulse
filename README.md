@@ -1,161 +1,226 @@
-# 🚇 Metro-Pulse
+# Metro-Pulse
 
-A full-stack metro route management platform that helps users explore metro stations, plan journeys, and track their travel history with ease.
+A full-stack metro route management platform that enables users to explore metro stations, plan journeys, and maintain a record of their travel history.
 
-## ✨ Features
+---
 
-- **Station Exploration**: Browse and search metro stations across the network
-- **Route Planning**: Find optimal metro routes between any two stations
-- **Favorite Routes**: Save and manage your favorite commute routes for quick access
-- **Journey History**: Track and view your past metro journeys
-- **Secure Authentication**: JWT-based user authentication with bcrypt password hashing
-- **User Profiles**: Personalized user accounts with saved preferences
-- **RESTful APIs**: Efficient backend APIs for seamless data handling
+## Table of Contents
 
-## 🛠️ Technology Stack
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [API Reference](#api-reference)
+- [Authentication](#authentication)
+- [Contributing](#contributing)
+- [License](#license)
+- [Author](#author)
+- [Support](#support)
+- [Planned Enhancements](#planned-enhancements)
+
+---
+
+## Features
+
+- **Station Exploration** — Browse and search metro stations across the network.
+- **Route Planning** — Find optimal routes between any two stations.
+- **Favorite Routes** — Save and manage frequently used commute routes for quick access.
+- **Journey History** — View a complete log of past metro journeys.
+- **Secure Authentication** — JWT-based user authentication with bcrypt password hashing.
+- **User Profiles** — Personalized accounts with saved preferences.
+- **RESTful API** — Well-structured backend endpoints for seamless data handling.
+
+---
+
+## Technology Stack
 
 ### Frontend
-- **React.js** - UI library for interactive user interfaces
-- **JavaScript** - Core programming language
-- **[Add your styling library - CSS, Tailwind, Material-UI, etc.]**
+
+- **React.js** — UI library for building interactive interfaces.
+- **JavaScript** — Core programming language.
+- **CSS / Tailwind CSS / Material-UI** — Styling (update as applicable).
 
 ### Backend
-- **Node.js** - Runtime environment
-- **Express.js** - Web framework for building APIs
-- **MongoDB** - NoSQL database for flexible data storage
-- **JWT** - Secure token-based authentication
-- **bcrypt** - Password hashing and security
 
-## 📋 Prerequisites
+- **Node.js** — Server-side runtime environment.
+- **Express.js** — Web framework for API development.
+- **MongoDB** — NoSQL database for flexible data storage.
+- **JWT** — Token-based authentication.
+- **bcrypt** — Secure password hashing.
 
-Before you begin, ensure you have the following installed:
-- Node.js (v14 or higher)
+---
+
+## Prerequisites
+
+Ensure the following are installed before proceeding:
+
+- Node.js v14 or higher
 - npm or yarn
-- MongoDB (local or cloud instance like MongoDB Atlas)
+- MongoDB (local installation or a cloud instance such as MongoDB Atlas)
 
-## 🚀 Getting Started
+---
+
+## Getting Started
 
 ### 1. Clone the Repository
 
-\`\`\`bash
+```bash
 git clone https://github.com/Shriram60/Metro-Pulse.git
 cd Metro-Pulse
-\`\`\`
+```
 
-### 2. Setup Backend
+### 2. Configure and Start the Backend
 
-\`\`\`bash
+```bash
 cd backend
 npm install
-\`\`\`
+```
 
-Create a `.env` file in the backend directory:
-\`\`\`
+Create a `.env` file in the `backend` directory with the following variables:
+
+```
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
 PORT=5000
-\`\`\`
+```
 
 Start the backend server:
-\`\`\`bash
+
+```bash
 npm start
-\`\`\`
+```
 
-The backend will run on `http://localhost:5000`
+The server will be available at `http://localhost:5000`.
 
-### 3. Setup Frontend
+### 3. Configure and Start the Frontend
 
-\`\`\`bash
+```bash
 cd front-end
 npm install
-\`\`\`
+```
 
-Create a `.env` file in the frontend directory (if needed):
-\`\`\`
+If required, create a `.env` file in the `front-end` directory:
+
+```
 REACT_APP_API_URL=http://localhost:5000
-\`\`\`
+```
 
-Start the React development server:
-\`\`\`bash
+Start the development server:
+
+```bash
 npm start
-\`\`\`
+```
 
-The frontend will open at `http://localhost:3000`
+The application will be available at `http://localhost:3000`.
 
-## 📁 Project Structure
+---
 
-\`\`\`
+## Project Structure
+
+```
 Metro-Pulse/
-├── backend/              # Node.js/Express backend
-│   ├── models/          # MongoDB schemas
-│   ├── routes/          # API endpoints
+├── backend/
+│   ├── models/           # MongoDB schemas
+│   ├── routes/           # API endpoint definitions
 │   ├── controllers/      # Business logic
-│   └── middleware/      # Authentication & validation
-├── front-end/           # React frontend
+│   └── middleware/       # Authentication and validation
+├── front-end/
 │   ├── src/
-│   │   ├── components/  # React components
-│   │   ├── pages/       # Page components
-│   │   ├── services/    # API calls
+│   │   ├── components/   # Reusable React components
+│   │   ├── pages/        # Page-level components
+│   │   ├── services/     # API call abstractions
 │   │   └── App.js
 │   └── public/
 └── README.md
-\`\`\`
+```
 
-## 🔌 API Endpoints
+---
+
+## API Reference
 
 ### Authentication
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - User login
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register a new user |
+| POST | `/api/auth/login` | Authenticate and receive a token |
 
 ### Stations
-- `GET /api/stations` - Get all stations
-- `GET /api/stations/:id` - Get station details
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/stations` | Retrieve all stations |
+| GET | `/api/stations/:id` | Retrieve details of a specific station |
 
 ### Routes
-- `GET /api/routes` - Get available routes
-- `POST /api/routes/search` - Search routes between stations
-- `POST /api/routes/favorite` - Save favorite route
-- `GET /api/routes/favorites` - Get favorite routes
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/routes` | Retrieve all available routes |
+| POST | `/api/routes/search` | Search for routes between two stations |
+| POST | `/api/routes/favorite` | Save a route as a favorite |
+| GET | `/api/routes/favorites` | Retrieve the user's saved favorite routes |
 
 ### Journey History
-- `POST /api/journeys` - Log a journey
-- `GET /api/journeys` - Get user's journey history
 
-## 🔐 Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/journeys` | Log a completed journey |
+| GET | `/api/journeys` | Retrieve the user's journey history |
 
-The app uses JWT (JSON Web Tokens) for secure authentication:
-- User passwords are hashed using bcrypt before storage
-- JWT tokens are issued upon successful login
-- Include the token in the `Authorization: Bearer <token>` header for protected routes
+---
 
-## 🤝 Contributing
+## Authentication
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+The application uses JSON Web Tokens (JWT) for stateless, secure authentication.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+- Passwords are hashed using **bcrypt** prior to storage.
+- A JWT token is issued upon successful login.
+- All protected routes require the token to be included in the `Authorization` header as follows:
 
-## 📝 License
+```
+Authorization: Bearer <token>
+```
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+---
 
-## 👤 Author
+## Contributing
 
-**Shriram60**
-- GitHub: [@Shriram60](https://github.com/Shriram60)
+Contributions are welcome. To contribute:
 
-## 🙋 Support
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/your-feature-name`
+3. Commit your changes: `git commit -m 'Add your feature description'`
+4. Push to the branch: `git push origin feature/your-feature-name`
+5. Open a Pull Request for review.
 
-If you encounter any issues or have questions, please open an issue on the GitHub repository.
+---
 
-## 🎯 Future Enhancements
+## License
 
-- [ ] Real-time transit updates
-- [ ] Push notifications for delays
-- [ ] Mobile app (React Native)
-- [ ] Integration with live metro APIs
-- [ ] Advanced analytics dashboard
-- [ ] Social sharing features
+This project is licensed under the MIT License. Refer to the `LICENSE` file for full terms.
+
+---
+
+## Author
+
+**Shriram60**  
+GitHub: [github.com/Shriram60](https://github.com/Shriram60)
+
+---
+
+## Support
+
+For bug reports or feature requests, please open an issue on the GitHub repository.
+
+---
+
+## Planned Enhancements
+
+- Real-time transit updates
+- Push notifications for service delays
+- Mobile application (React Native)
+- Integration with live metro APIs
+- Advanced analytics dashboard
+- Social sharing capabilities
