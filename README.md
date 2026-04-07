@@ -1,70 +1,161 @@
-# Getting Started with Create React App
+# 🚇 Metro-Pulse
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack metro route management platform that helps users explore metro stations, plan journeys, and track their travel history with ease.
 
-## Available Scripts
+## ✨ Features
 
-In the project directory, you can run:
+- **Station Exploration**: Browse and search metro stations across the network
+- **Route Planning**: Find optimal metro routes between any two stations
+- **Favorite Routes**: Save and manage your favorite commute routes for quick access
+- **Journey History**: Track and view your past metro journeys
+- **Secure Authentication**: JWT-based user authentication with bcrypt password hashing
+- **User Profiles**: Personalized user accounts with saved preferences
+- **RESTful APIs**: Efficient backend APIs for seamless data handling
 
-### `npm start`
+## 🛠️ Technology Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Frontend
+- **React.js** - UI library for interactive user interfaces
+- **JavaScript** - Core programming language
+- **[Add your styling library - CSS, Tailwind, Material-UI, etc.]**
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Backend
+- **Node.js** - Runtime environment
+- **Express.js** - Web framework for building APIs
+- **MongoDB** - NoSQL database for flexible data storage
+- **JWT** - Secure token-based authentication
+- **bcrypt** - Password hashing and security
 
-### `npm test`
+## 📋 Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Before you begin, ensure you have the following installed:
+- Node.js (v14 or higher)
+- npm or yarn
+- MongoDB (local or cloud instance like MongoDB Atlas)
 
-### `npm run build`
+## 🚀 Getting Started
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 1. Clone the Repository
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+\`\`\`bash
+git clone https://github.com/Shriram60/Metro-Pulse.git
+cd Metro-Pulse
+\`\`\`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 2. Setup Backend
 
-### `npm run eject`
+\`\`\`bash
+cd backend
+npm install
+\`\`\`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Create a `.env` file in the backend directory:
+\`\`\`
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+PORT=5000
+\`\`\`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Start the backend server:
+\`\`\`bash
+npm start
+\`\`\`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+The backend will run on `http://localhost:5000`
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 3. Setup Frontend
 
-## Learn More
+\`\`\`bash
+cd front-end
+npm install
+\`\`\`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Create a `.env` file in the frontend directory (if needed):
+\`\`\`
+REACT_APP_API_URL=http://localhost:5000
+\`\`\`
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Start the React development server:
+\`\`\`bash
+npm start
+\`\`\`
 
-### Code Splitting
+The frontend will open at `http://localhost:3000`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 📁 Project Structure
 
-### Analyzing the Bundle Size
+\`\`\`
+Metro-Pulse/
+├── backend/              # Node.js/Express backend
+│   ├── models/          # MongoDB schemas
+│   ├── routes/          # API endpoints
+│   ├── controllers/      # Business logic
+│   └── middleware/      # Authentication & validation
+├── front-end/           # React frontend
+│   ├── src/
+│   │   ├── components/  # React components
+│   │   ├── pages/       # Page components
+│   │   ├── services/    # API calls
+│   │   └── App.js
+│   └── public/
+└── README.md
+\`\`\`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🔌 API Endpoints
 
-### Making a Progressive Web App
+### Authentication
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - User login
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Stations
+- `GET /api/stations` - Get all stations
+- `GET /api/stations/:id` - Get station details
 
-### Advanced Configuration
+### Routes
+- `GET /api/routes` - Get available routes
+- `POST /api/routes/search` - Search routes between stations
+- `POST /api/routes/favorite` - Save favorite route
+- `GET /api/routes/favorites` - Get favorite routes
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Journey History
+- `POST /api/journeys` - Log a journey
+- `GET /api/journeys` - Get user's journey history
 
-### Deployment
+## 🔐 Authentication
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+The app uses JWT (JSON Web Tokens) for secure authentication:
+- User passwords are hashed using bcrypt before storage
+- JWT tokens are issued upon successful login
+- Include the token in the `Authorization: Bearer <token>` header for protected routes
 
-### `npm run build` fails to minify
+## 🤝 Contributing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 👤 Author
+
+**Shriram60**
+- GitHub: [@Shriram60](https://github.com/Shriram60)
+
+## 🙋 Support
+
+If you encounter any issues or have questions, please open an issue on the GitHub repository.
+
+## 🎯 Future Enhancements
+
+- [ ] Real-time transit updates
+- [ ] Push notifications for delays
+- [ ] Mobile app (React Native)
+- [ ] Integration with live metro APIs
+- [ ] Advanced analytics dashboard
+- [ ] Social sharing features
