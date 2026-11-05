@@ -8,7 +8,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "postinstall": "npm install --prefix backend && npm install --prefix front-end",
+    "setup": "npm install && npm install --prefix backend && npm install --prefix front-end",
     "demo": "concurrently --names api,web --prefix-colors magenta,cyan \"npm run demo --prefix backend\" \"npm run dev --prefix front-end\"",
     "dev": "concurrently --names api,web --prefix-colors magenta,cyan \"npm run dev --prefix backend\" \"npm run dev --prefix front-end\"",
     "test": "npm test --prefix backend && npm test --prefix front-end",
