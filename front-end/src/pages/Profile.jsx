@@ -1,32 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { api } from '../api';
 import { useApp } from '../context';
 import { formatLongDate } from '../lib/time';
 import LoginPrompt from '../components/LoginPrompt';
 import StationSelect from '../components/StationSelect';
 
-export default function Profile() {
-  const { user, setUser, signOut, stations, lines, showToast } = useApp();
-  const [form, setForm] = useState({ username: '', phone: '', homeStation: '' });
+// Only rendered once the user is known, so the fields are right from the first
+// paint and an early edit cannot overwrite them with blanks.
+function ProfileForm({ user }) {
+  const { setUser, signOut, stations, lines, showToast } = useApp();
+  const [form, setForm] = useState({
+    username: user.username,
+    phone: user.phone || '',
+    homeStation: user.homeStation || '',
+  });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      setForm({ username: user.username, phone: user.phone || '', homeStation: user.homeStation || '' });
-    }
-  }, [user]);
-
-  if (!user) {
-    return (
-      <>
-        <div className="page-head"><h1>Profile</h1></div>
-        <LoginPrompt message="Log in to manage your account." />
-      </>
-    );
-  }
-
-  const update = (field) => (event) => setForm({ ...form, [field]: event.target.value });
+  const setField = (field, value) => setForm((current) => ({ ...current, [field]: value }));
 
   async function save(event) {
     event.preventDefault();
@@ -52,7 +43,13 @@ export default function Profile() {
       <form className="panel profile" onSubmit={save}>
         <label className="field">
           <span>Username</span>
-          <input value={form.username} onChange={update('username')} minLength={3} maxLength={30} required />
+          <input
+            value={form.username}
+            onChange={(event) => setField('username', event.target.value)}
+            minLength={3}
+            maxLength={30}
+            required
+          />
         </label>
         <label className="field">
           <span>Email</span>
@@ -61,12 +58,12 @@ export default function Profile() {
         </label>
         <label className="field">
           <span>Phone</span>
-          <input type="tel" value={form.phone} onChange={update('phone')} />
+          <input type="tel" value={form.phone} onChange={(event) => setField('phone', event.target.value)} />
         </label>
         <StationSelect
           label="Home station"
           value={form.homeStation}
-          onChange={(homeStation) => setForm({ ...form, homeStation })}
+          onChange={(homeStation) => setField('homeStation', homeStation)}
           lines={lines}
           stations={stations}
           emptyLabel="No home station"
@@ -82,4 +79,19 @@ export default function Profile() {
       </form>
     </>
   );
+}
+
+export default function Profile() {
+  const { user } = useApp();
+
+  if (!user) {
+    return (
+      <>
+        <div className="page-head"><h1>Profile</h1></div>
+        <LoginPrompt message="Log in to manage your account." />
+      </>
+    );
+  }
+
+  return <ProfileForm key={user._id} user={user} />;
 }
