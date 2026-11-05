@@ -589,7 +589,39 @@ main:focus {
 /* Network diagram */
 
 .diagram-wrap {
+  position: relative;
   min-width: 0;
+}
+
+.diagram-skip {
+  position: absolute;
+  z-index: 6;
+  padding: 8px 16px 6px;
+  border-radius: 4px;
+  background: var(--panel);
+  font-weight: 600;
+}
+
+.diagram-skip:not(:focus) {
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.diagram-canvas {
+  position: relative;
+}
+
+.diagram a:focus {
+  outline: none;
+}
+
+.diagram a:focus-visible .diagram-target {
+  stroke: var(--focus);
+  stroke-width: 3;
 }
 
 .diagram-hint {
@@ -1348,7 +1380,7 @@ main:focus {
     font-size: 0.875rem;
   }
 
-  .diagram svg {
+  .diagram-canvas {
     min-width: 760px;
   }
 

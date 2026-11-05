@@ -10,6 +10,7 @@ const MIN_HALO = 6;
 const MAX_HALO = 20;
 
 const haloRadius = (crowd) => MIN_HALO + (crowd / 100) * (MAX_HALO - MIN_HALO);
+const isTouchScreen = () => window.matchMedia?.('(hover: none)')?.matches ?? false;
 
 function Key() {
   const samples = [[20, 'Low'], [55, 'Medium'], [90, 'High']];
@@ -27,8 +28,8 @@ function Key() {
   );
 }
 
-export default function NetworkMap({ stations, now, isLineOpen }) {
-  const [hovered, setHovered] = useState(null);
+export default function NetworkMap({ stations, now, isLineOpen, skipTo }) {
+  const [active, setActive] = useState(null);
 
   const places = useMemo(() => physicalStations(stations).map((station) => ({
     ...station,
@@ -43,111 +44,148 @@ export default function NetworkMap({ stations, now, isLineOpen }) {
     null,
   );
 
+  const describe = (station) => {
+    const crowd = running(station) ? `${crowdBand(crowdOf(station))} ${crowdOf(station)}%` : 'closed';
+    return `${station.name}, ${station.lines.map(lineName).join(' and ')}, ${crowd}. Plan a trip from here.`;
+  };
+
+  // A touch screen cannot hover, so the first tap shows the details and the
+  // second opens the planner.
+  function selectStop(event, station) {
+    if (isTouchScreen() && active?.stationId !== station.stationId) {
+      event.preventDefault();
+      setActive(station);
+    }
+  }
+
+  function skipDiagram(event) {
+    event.preventDefault();
+    document.getElementById(skipTo)?.focus();
+  }
+
   return (
     <div className="diagram-wrap">
+      <a className="diagram-skip" href={`#${skipTo}`} onClick={skipDiagram}>Skip the diagram</a>
       <div className="diagram">
-        <svg
-          viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
-          role="img"
-          aria-label="Diagram of the Purple, Green and Yellow lines, with a halo around each station that grows with its crowd. The Stations page lists the same information."
+        <div
+          className="diagram-canvas"
+          onClick={(event) => {
+            if (!event.target.closest('a')) setActive(null);
+          }}
         >
-          {places.map((station) => {
-            const crowd = crowdOf(station);
-            if (crowd === 0) return null;
-            const { x, y } = station.position;
-            return (
-              <circle
-                key={station.stationId}
-                cx={x}
-                cy={y}
-                r={haloRadius(crowd)}
-                className={`halo halo--${crowdBand(crowd).toLowerCase()}`}
-              />
-            );
-          })}
-  
-          {busiest && (
-            <circle
-              cx={busiest.position.x}
-              cy={busiest.position.y}
-              r={haloRadius(crowdOf(busiest))}
-              className="halo-pulse"
-            />
-          )}
-  
-          <path d={linePath('yellow')} className="diagram-casing" />
-          {['purple', 'green', 'yellow'].map((line) => (
-            <path key={line} d={linePath(line)} className={`diagram-line diagram-line--${line}`} />
-          ))}
-  
-          {LINE_LABELS.map(({ id, x, y, anchor }) => (
-            <text key={id} x={x} y={y} textAnchor={anchor} className="diagram-line-name">{lineName(id)}</text>
-          ))}
-  
-          {places.map((station) => {
-            const { x, y } = station.position;
-            return station.lines.length > 1
-              ? <rect key={station.stationId} x={x - 17} y={y - 9} width="34" height="18" rx="9" className="stop stop--interchange" />
-              : <circle key={station.stationId} cx={x} cy={y} r={LABELS[station.stationId]?.major ? 8 : 5} className="stop" />;
-          })}
-  
-          {places.map((station) => {
-            const label = LABELS[station.stationId];
-            if (!label) return null;
-            const { x, y } = station.position;
-            return (
-              <text
-                key={station.stationId}
-                x={x + label.dx}
-                y={y + label.dy}
-                textAnchor={label.anchor}
-                className={label.major ? 'diagram-label diagram-label--major' : 'diagram-label'}
-              >
-                {label.text || station.name}
-              </text>
-            );
-          })}
-  
-          <Key />
-  
-          {places.map((station) => {
-            const { x, y } = station.position;
-            return (
-              <a key={station.stationId} href={href('planner', { from: station.stationId })} aria-label={`Plan a trip from ${station.name}`}>
-                <circle
-                  cx={x}
-                  cy={y}
-                  r="13"
-                  className="diagram-target"
-                  onMouseEnter={() => setHovered(station)}
-                  onMouseLeave={() => setHovered(null)}
-                />
-              </a>
-            );
-          })}
-        </svg>
-  
-        {hovered && (
-          <div
-            className={[
-              'diagram-tip',
-              hovered.position.y < 150 ? 'diagram-tip--below' : '',
-              hovered.position.x > 920 ? 'diagram-tip--end' : '',
-              hovered.position.x < 180 ? 'diagram-tip--start' : '',
-            ].join(' ')}
-            style={{
-              left: `${(hovered.position.x / VIEW.width) * 100}%`,
-              top: `${(hovered.position.y / VIEW.height) * 100}%`,
-            }}
+          <svg
+            viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
+            role="group"
+            aria-label="Network diagram of the Purple, Green and Yellow lines. Each station links to a trip planned from it and gives its crowd level."
           >
-            <strong>{hovered.name}</strong>
-            <span>{hovered.lines.map(lineName).join(' and ')}</span>
-            {running(hovered) ? <CrowdMeter level={crowdOf(hovered)} /> : <span>Closed</span>}
-            <small>Select to plan a trip from here</small>
-          </div>
-        )}
+            <g aria-hidden="true">
+              {places.map((station) => {
+                const crowd = crowdOf(station);
+                if (crowd === 0) return null;
+                const { x, y } = station.position;
+                return (
+                  <circle
+                    key={station.stationId}
+                    cx={x}
+                    cy={y}
+                    r={haloRadius(crowd)}
+                    className={`halo halo--${crowdBand(crowd).toLowerCase()}`}
+                  />
+                );
+              })}
+
+              {busiest && (
+                <circle
+                  cx={busiest.position.x}
+                  cy={busiest.position.y}
+                  r={haloRadius(crowdOf(busiest))}
+                  className="halo-pulse"
+                />
+              )}
+
+              <path d={linePath('yellow')} className="diagram-casing" />
+              {['purple', 'green', 'yellow'].map((line) => (
+                <path key={line} d={linePath(line)} className={`diagram-line diagram-line--${line}`} />
+              ))}
+
+              {LINE_LABELS.map(({ id, x, y, anchor }) => (
+                <text key={id} x={x} y={y} textAnchor={anchor} className="diagram-line-name">{lineName(id)}</text>
+              ))}
+
+              {places.map((station) => {
+                const { x, y } = station.position;
+                return station.lines.length > 1
+                  ? <rect key={station.stationId} x={x - 17} y={y - 9} width="34" height="18" rx="9" className="stop stop--interchange" />
+                  : <circle key={station.stationId} cx={x} cy={y} r={LABELS[station.stationId]?.major ? 8 : 5} className="stop" />;
+              })}
+
+              {places.map((station) => {
+                const label = LABELS[station.stationId];
+                if (!label) return null;
+                const { x, y } = station.position;
+                return (
+                  <text
+                    key={station.stationId}
+                    x={x + label.dx}
+                    y={y + label.dy}
+                    textAnchor={label.anchor}
+                    className={label.major ? 'diagram-label diagram-label--major' : 'diagram-label'}
+                  >
+                    {label.text || station.name}
+                  </text>
+                );
+              })}
+
+              <Key />
+            </g>
+
+            {places.map((station) => {
+              const { x, y } = station.position;
+              return (
+                <a
+                  key={station.stationId}
+                  href={href('planner', { from: station.stationId })}
+                  aria-label={describe(station)}
+                  onClick={(event) => selectStop(event, station)}
+                  onPointerEnter={(event) => {
+                    if (event.pointerType === 'mouse') setActive(station);
+                  }}
+                  onPointerLeave={(event) => {
+                    if (event.pointerType === 'mouse') setActive(null);
+                  }}
+                  onFocus={(event) => {
+                    if (event.target.matches(':focus-visible')) setActive(station);
+                  }}
+                  onBlur={() => setActive(null)}
+                >
+                  <circle cx={x} cy={y} r="13" className="diagram-target" />
+                </a>
+              );
+            })}
+          </svg>
+
+          {active && (
+            <div
+              className={[
+                'diagram-tip',
+                active.position.y < 190 ? 'diagram-tip--below' : '',
+                active.position.x > 920 ? 'diagram-tip--end' : '',
+                active.position.x < 180 ? 'diagram-tip--start' : '',
+              ].join(' ')}
+              style={{
+                left: `${(active.position.x / VIEW.width) * 100}%`,
+                top: `${(active.position.y / VIEW.height) * 100}%`,
+              }}
+            >
+              <strong>{active.name}</strong>
+              <span>{active.lines.map(lineName).join(' and ')}</span>
+              {running(active) ? <CrowdMeter level={crowdOf(active)} /> : <span>Closed</span>}
+              <small>{isTouchScreen() ? 'Tap again to plan a trip from here' : 'Select to plan a trip from here'}</small>
+            </div>
+          )}
+        </div>
       </div>
-      <p className="diagram-hint">Swipe sideways to see the whole network.</p>
+      <p className="diagram-hint">Swipe sideways to see the whole network, and tap a station for its details.</p>
     </div>
   );
 }

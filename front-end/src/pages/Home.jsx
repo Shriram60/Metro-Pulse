@@ -46,10 +46,10 @@ export default function Home() {
       </ul>
 
       <div className="home-grid">
-        <NetworkMap stations={stations} now={now} isLineOpen={(id) => openLines.has(id)} />
+        <NetworkMap stations={stations} now={now} isLineOpen={(id) => openLines.has(id)} skipTo="busiest" />
 
         <aside className="busiest">
-          <h2>Busiest stations</h2>
+          <h2 id="busiest" tabIndex={-1}>Busiest stations</h2>
           {running ? (
             <ol>
               {busiest.map((station) => (
