@@ -1,0 +1,20 @@
+{
+  "name": "metro-pulse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A trip planner for the Bangalore metro",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "postinstall": "npm install --prefix backend && npm install --prefix front-end",
+    "demo": "concurrently --names api,web --prefix-colors magenta,cyan \"npm run demo --prefix backend\" \"npm run dev --prefix front-end\"",
+    "dev": "concurrently --names api,web --prefix-colors magenta,cyan \"npm run dev --prefix backend\" \"npm run dev --prefix front-end\"",
+    "test": "npm test --prefix backend && npm test --prefix front-end",
+    "build": "npm run build --prefix front-end"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}
