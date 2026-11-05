@@ -220,6 +220,29 @@ test('the diagram exposes each station as a named link', async () => {
   expect(screen.getByRole('group', { name: /Network diagram/ })).toBeInTheDocument();
 });
 
+test('editing the profile straight away keeps the other fields', async () => {
+  localStorage.setItem('token', 'saved');
+  let saved;
+  mockServer({
+    'GET /auth/me': () => json({ _id: '1', username: 'asha', email: 'asha@example.com', phone: '12345', createdAt: '2026-01-01' }),
+    'PATCH /auth/me': (options) => {
+      saved = JSON.parse(options.body);
+      return json({ _id: '1', username: 'asha', email: 'asha@example.com', createdAt: '2026-01-01', ...saved });
+    },
+  });
+  window.location.hash = '#/profile';
+  render(<App />);
+
+  const username = await screen.findByLabelText('Username');
+  expect(username).toHaveValue('asha');
+
+  await userEvent.selectOptions(screen.getByLabelText('Home station'), 'PL22');
+  await userEvent.click(screen.getByRole('button', { name: 'Save profile' }));
+
+  expect(await screen.findByText('Profile saved')).toBeInTheDocument();
+  expect(saved).toEqual({ username: 'asha', phone: '12345', homeStation: 'PL22' });
+});
+
 test('station search filters the list', async () => {
   mockServer();
   window.location.hash = '#/stations';
