@@ -5,6 +5,11 @@ export const getToken = () => localStorage.getItem(TOKEN_KEY);
 export const setToken = (token) => localStorage.setItem(TOKEN_KEY, token);
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
 
+let onSessionExpired = null;
+export const setSessionExpiredHandler = (handler) => {
+  onSessionExpired = handler;
+};
+
 export async function api(path, { method = 'GET', body } = {}) {
   const headers = { 'Content-Type': 'application/json' };
   const token = getToken();
@@ -23,6 +28,11 @@ export async function api(path, { method = 'GET', body } = {}) {
 
   const data = await response.json().catch(() => null);
   if (!response.ok) {
+    // A wrong password is also a 401, but it says nothing about the saved login.
+    if (response.status === 401 && token && path !== '/auth/login') {
+      clearToken();
+      onSessionExpired?.();
+    }
     const error = new Error(data?.message || `The request failed with status ${response.status}`);
     error.status = response.status;
     throw error;

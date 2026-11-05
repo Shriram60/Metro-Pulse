@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { api, clearToken, getToken, setToken } from './api';
+import { api, clearToken, getToken, setSessionExpiredHandler, setToken } from './api';
 import { AppContext } from './context';
 import { useRoute } from './lib/router';
 import AuthDialog from './components/AuthDialog';
@@ -50,12 +50,18 @@ export default function App() {
   }, [loadNetwork]);
 
   useEffect(() => {
+    setSessionExpiredHandler(() => {
+      setUser(null);
+      setToast({ message: 'Your session has expired. Log in again.', id: Date.now() });
+    });
+    return () => setSessionExpiredHandler(null);
+  }, []);
+
+  useEffect(() => {
     if (!getToken()) return;
     api('/auth/me')
       .then(setUser)
-      .catch((error) => {
-        if (error.status === 401) clearToken();
-      })
+      .catch(() => {})
       .finally(() => setRestoring(false));
   }, []);
 

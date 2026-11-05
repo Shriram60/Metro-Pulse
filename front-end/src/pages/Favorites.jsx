@@ -11,6 +11,8 @@ export default function Favorites() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    setError('');
+    setFavorites(null);
     if (!user) return;
     api('/favorites').then(setFavorites).catch((err) => setError(err.message));
   }, [user]);

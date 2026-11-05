@@ -23,6 +23,8 @@ export default function History() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    setError('');
+    setJourneys(null);
     if (!user) return;
     api('/journeys').then(setJourneys).catch((err) => setError(err.message));
   }, [user]);
