@@ -1384,6 +1384,16 @@ main:focus {
     min-width: 760px;
   }
 
+  .diagram-tip {
+    position: fixed;
+    left: 16px !important;
+    right: 16px;
+    top: auto !important;
+    bottom: 16px;
+    z-index: 15;
+    transform: none !important;
+  }
+
   .strip-row {
     grid-template-columns: 62px 40px minmax(0, 1fr);
   }
