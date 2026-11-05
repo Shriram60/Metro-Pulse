@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import { useApp } from '../context';
 import { crowdLevel } from '../lib/crowd';
@@ -49,26 +49,49 @@ export default function Planner({ params }) {
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [logged, setLogged] = useState(false);
+  const latestRequest = useRef(0);
 
   useEffect(() => {
     if (user?.homeStation) setFrom((current) => current || user.homeStation);
   }, [user]);
 
   const plan = useCallback(async (fromId, toId, at) => {
+    latestRequest.current += 1;
+    const request = latestRequest.current;
     setBusy(true);
     setError('');
     setSaved(false);
     setLogged(false);
     try {
       const route = await api(`/routes/plan?from=${fromId}&to=${toId}`);
+      if (request !== latestRequest.current) return;
       setResult({ route, departure: atTime(at) });
     } catch (err) {
+      if (request !== latestRequest.current) return;
       setResult(null);
       setError(err.message);
     } finally {
-      setBusy(false);
+      if (request === latestRequest.current) setBusy(false);
     }
   }, []);
+
+  // The route on screen always matches the form, so an old one cannot be saved by mistake.
+  function clearRoute() {
+    latestRequest.current += 1;
+    setResult(null);
+    setError('');
+    setBusy(false);
+  }
+
+  function changeFrom(value) {
+    setFrom(value);
+    clearRoute();
+  }
+
+  function changeTo(value) {
+    setTo(value);
+    clearRoute();
+  }
 
   useEffect(() => {
     if (params.get('from') && params.get('to')) {
@@ -84,6 +107,7 @@ export default function Planner({ params }) {
   function swap() {
     setFrom(to);
     setTo(from);
+    clearRoute();
   }
 
   const stationById = (id) => stations.find((station) => station.stationId === id);
@@ -128,7 +152,7 @@ export default function Planner({ params }) {
 
   let details = (
     <div className="empty empty--plain">
-      <p>Choose two stations to see the route, the fare and how busy it will be.</p>
+      <p>{from && to ? 'Select Find route to see this trip.' : 'Choose two stations to see the route, the fare and how busy it will be.'}</p>
     </div>
   );
 
@@ -180,12 +204,20 @@ export default function Planner({ params }) {
 
       <div className="planner">
         <form className="panel planner__form" onSubmit={submit}>
-          <StationSelect label="From" value={from} onChange={setFrom} lines={lines} stations={stations} emptyLabel="Choose a station" required />
+          <StationSelect label="From" value={from} onChange={changeFrom} lines={lines} stations={stations} emptyLabel="Choose a station" required />
           <button type="button" className="link-button planner__swap" onClick={swap}>Swap stations</button>
-          <StationSelect label="To" value={to} onChange={setTo} lines={lines} stations={stations} emptyLabel="Choose a station" required />
+          <StationSelect label="To" value={to} onChange={changeTo} lines={lines} stations={stations} emptyLabel="Choose a station" required />
           <label className="field">
             <span>Leaving at</span>
-            <input type="time" value={time} onChange={(event) => setTime(event.target.value)} required />
+            <input
+              type="time"
+              value={time}
+              onChange={(event) => {
+                setTime(event.target.value);
+                clearRoute();
+              }}
+              required
+            />
           </label>
           {error && <p className="form-error" role="alert">{error}</p>}
           <button type="submit" className="button button--wide" disabled={busy}>Find route</button>
