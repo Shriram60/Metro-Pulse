@@ -1,226 +1,215 @@
-# Metro-Pulse
+# MetroPulse
 
-A full-stack metro route management platform that enables users to explore metro stations, plan journeys, and maintain a record of their travel history.
+A trip planner for the Bangalore metro. It finds your route across the network, tells you where to change and what the trip costs, and shows how busy each station is likely to be.
 
----
+[![CI](https://github.com/Shriram60/Metro-Pulse/actions/workflows/ci.yml/badge.svg)](https://github.com/Shriram60/Metro-Pulse/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![React](https://img.shields.io/badge/React-19-149eca)
+![Node](https://img.shields.io/badge/Node-20%2B-3c873a)
+![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-13aa52)
 
-## Table of Contents
-
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [API Reference](#api-reference)
-- [Authentication](#authentication)
-- [Contributing](#contributing)
-- [License](#license)
-- [Author](#author)
-- [Support](#support)
-- [Planned Enhancements](#planned-enhancements)
-
----
+![The MetroPulse home page, showing a diagram of the three metro lines with a halo around each station sized by its crowd](docs/screenshots/home.png)
 
 ## Features
 
-- **Station Exploration** — Browse and search metro stations across the network.
-- **Route Planning** — Find optimal routes between any two stations.
-- **Favorite Routes** — Save and manage frequently used commute routes for quick access.
-- **Journey History** — View a complete log of past metro journeys.
-- **Secure Authentication** — JWT-based user authentication with bcrypt password hashing.
-- **User Profiles** — Personalized accounts with saved preferences.
-- **RESTful API** — Well-structured backend endpoints for seamless data handling.
+- **Real routes.** Searches a graph of the 83 stations on the Purple, Green and Yellow lines, so it knows where to change and which direction to board.
+- **A strip map for every trip.** Shows each stop in order, the time you reach each change, the fare and the likely crowd.
+- **Service hours that account for the whole trip.** Each line is checked at the time you would reach it, so a late trip warns you about the connection you would miss.
+- **A live network diagram.** Drawn from the station data, with a halo around each stop that grows with its crowd. Select any stop to plan a trip from it.
+- **Station search.** Find a station by name or browse by line.
+- **Accounts.** Save favorite routes, keep a log of your trips with totals, and set a home station that the planner starts from.
+- **Crowd patterns.** Charts of how the crowd changes through the day and the week.
+- **Works on a phone.** Every page adapts down to small screens.
 
----
+> **Crowd levels are simulated.** No public live ridership feed exists for the network, so they come from a model of the time, the day and the type of station. See [Limits](#limits).
 
-## Technology Stack
+## Screenshots
 
-### Frontend
+These come from the running demo, with the browser clock set to a weekday at 6:15 PM to show the evening rush.
 
-- **React.js** — UI library for building interactive interfaces.
-- **JavaScript** — Core programming language.
-- **CSS / Tailwind CSS / Material-UI** — Styling (update as applicable).
+### Planner
 
-### Backend
+![The planner showing a trip from Indiranagar to Electronic City with two changes, drawn as a vertical strip of stops in the colors of each line](docs/screenshots/planner.png)
 
-- **Node.js** — Server-side runtime environment.
-- **Express.js** — Web framework for API development.
-- **MongoDB** — NoSQL database for flexible data storage.
-- **JWT** — Token-based authentication.
-- **bcrypt** — Secure password hashing.
+### All pages
 
----
+<table>
+  <tr>
+    <td width="50%"><strong>Stations</strong><br><img src="docs/screenshots/stations.png" alt="Stations listed along each line, with a search box and a line filter"></td>
+    <td width="50%"><strong>Crowd patterns</strong><br><img src="docs/screenshots/stats.png" alt="Charts of the crowd by line, by hour and by day of the week"></td>
+  </tr>
+  <tr>
+    <td><strong>Favorites</strong><br><img src="docs/screenshots/favorites.png" alt="A table of saved routes"></td>
+    <td><strong>Trip history</strong><br><img src="docs/screenshots/history.png" alt="A table of logged trips with totals for fares and time"></td>
+  </tr>
+  <tr>
+    <td><strong>Outside service hours</strong><br><img src="docs/screenshots/planner-closed.png" alt="The planner explaining that a 3 AM trip does not work, with the hours of each line"></td>
+    <td><strong>Network map</strong><br><img src="docs/screenshots/map.png" alt="A map of the full metro network"></td>
+  </tr>
+  <tr>
+    <td><strong>Log in</strong><br><img src="docs/screenshots/login.png" alt="The log in dialog"></td>
+    <td><strong>Profile</strong><br><img src="docs/screenshots/profile.png" alt="The profile form with a home station"></td>
+  </tr>
+</table>
 
-## Prerequisites
+### On a phone
 
-Ensure the following are installed before proceeding:
+![The home, planner and stations pages at phone size](docs/screenshots/phone.png)
 
-- Node.js v14 or higher
-- npm or yarn
-- MongoDB (local installation or a cloud instance such as MongoDB Atlas)
+## Run it
 
----
+You need [Node.js](https://nodejs.org) 20 or newer.
 
-## Getting Started
+### Quick demo
 
-### 1. Clone the Repository
+This needs no database. It starts a temporary MongoDB in memory with a sample account, and everything is deleted when you stop it.
 
 ```bash
 git clone https://github.com/Shriram60/Metro-Pulse.git
 cd Metro-Pulse
+npm run setup
+npm run demo
 ```
 
-### 2. Configure and Start the Backend
+Open the address printed by Vite, usually <http://localhost:3000>, and log in with:
+
+| Email | Password |
+|---|---|
+| `demo@example.com` | `metropulse` |
+
+### With your own MongoDB
+
+Copy the example settings and fill them in:
 
 ```bash
-cd backend
-npm install
+cp backend/.env.example backend/.env
+npm run dev
 ```
 
-Create a `.env` file in the `backend` directory with the following variables:
+The stations are added to an empty database the first time the server starts.
 
-```
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
-PORT=5000
-```
+| Setting | File | Purpose |
+|---|---|---|
+| `MONGODB_URI` | `backend/.env` | Your MongoDB connection string |
+| `JWT_SECRET` | `backend/.env` | Signs login tokens. Required when `NODE_ENV` is `production` |
+| `PORT` | `backend/.env` | API port, 5000 by default |
+| `VITE_API_URL` | `front-end/.env` | Only needed if the API is on another host |
 
-Start the backend server:
+If port 5000 is taken, as it often is on a Mac, run `PORT=5001 npm run demo`. In PowerShell, run `$env:PORT=5001; npm run demo`.
+
+### Tests
 
 ```bash
-npm start
+npm test
 ```
 
-The server will be available at `http://localhost:5000`.
+The backend tests run the API against a real in-memory MongoDB and cover the route planner, validation, and users being unable to reach each other's data. The frontend tests cover the crowd model and the main flows in the interface. GitHub Actions runs both, plus a production build, on every push to `main` and every pull request.
 
-### 3. Configure and Start the Frontend
+## How it works
 
-```bash
-cd front-end
-npm install
+```mermaid
+flowchart LR
+  Browser["React app"] -- "REST and JWT" --> API["Express API"]
+  API --> Planner["Route planner"]
+  API --> DB[("MongoDB")]
+  Planner --> DB
 ```
 
-If required, create a `.env` file in the `front-end` directory:
+**Route planning.** Stations with the same name are one physical station, which is how Majestic and RV Road join the lines into one graph. A breadth-first search finds the path with the fewest stops, and consecutive hops on one line become a leg with a direction of travel. This all happens on the server, so saved fares and trip lengths cannot be set by the client. The code is in [`routePlanner.js`](backend/src/services/routePlanner.js).
 
+**Crowd model.** Each type of station has a typical peak for the morning, midday and evening. That is scaled by the hour and the day of the week, with a small variation that stays the same for ten minutes, so every page agrees on a number. The code is in [`crowd.js`](front-end/src/lib/crowd.js).
+
+**Network diagram.** Each line is defined by a few anchor points, and the stations are spaced evenly between them. The code is in [`diagram.js`](front-end/src/lib/diagram.js).
+
+## API
+
+Routes marked with a lock need an `Authorization: Bearer <token>` header. Register and log in both return a token.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Create an account |
+| POST | `/api/auth/login` | Log in |
+| GET | `/api/auth/me` 🔒 | Get your profile |
+| PATCH | `/api/auth/me` 🔒 | Update your username, phone or home station |
+| GET | `/api/stations` | List all stations |
+| GET | `/api/stations/line/:line` | List the stations on a line, in order |
+| GET | `/api/lines` | List the lines and their hours |
+| GET | `/api/routes/plan?from=PL19&to=GL19` | Plan a route between two station ids |
+| GET | `/api/favorites` 🔒 | List your saved routes |
+| POST | `/api/favorites` 🔒 | Save a route, with `from`, `to` and an optional `label` |
+| DELETE | `/api/favorites/:id` 🔒 | Remove a saved route |
+| GET | `/api/journeys` 🔒 | List your trips, newest first |
+| POST | `/api/journeys` 🔒 | Log a trip, with `from`, `to`, `departureTime` and `crowdLevel` |
+| DELETE | `/api/journeys/:id` 🔒 | Remove a trip |
+
+A planned route looks like this, shortened to the first leg's end points:
+
+```json
+{
+  "from": { "stationId": "PL19", "name": "MG Road", "line": "purple" },
+  "to": { "stationId": "GL19", "name": "KR Market", "line": "green" },
+  "stations": 7,
+  "stops": 6,
+  "interchanges": 1,
+  "fare": 60,
+  "minutes": 18,
+  "legs": [
+    {
+      "line": "purple",
+      "towards": "Challaghatta",
+      "stations": [
+        { "stationId": "PL19", "name": "MG Road", "type": "interchange", "minute": 0 },
+        { "stationId": "PL23", "name": "Majestic", "type": "interchange", "minute": 9 }
+      ]
+    }
+  ]
+}
 ```
-REACT_APP_API_URL=http://localhost:5000
-```
 
-Start the development server:
-
-```bash
-npm start
-```
-
-The application will be available at `http://localhost:3000`.
-
----
-
-## Project Structure
+## Project structure
 
 ```
 Metro-Pulse/
 ├── backend/
-│   ├── models/           # MongoDB schemas
-│   ├── routes/           # API endpoint definitions
-│   ├── controllers/      # Business logic
-│   └── middleware/       # Authentication and validation
-├── front-end/
+│   ├── server.js             Connects to MongoDB and starts the API
+│   ├── scripts/demo.js       Runs the API on an in-memory database
 │   ├── src/
-│   │   ├── components/   # Reusable React components
-│   │   ├── pages/        # Page-level components
-│   │   ├── services/     # API call abstractions
-│   │   └── App.js
-│   └── public/
-└── README.md
+│   │   ├── data/             The lines and stations
+│   │   ├── middleware/       Login checks and error handling
+│   │   ├── models/           Mongoose schemas
+│   │   ├── routes/           API endpoints
+│   │   └── services/         The route planner
+│   └── tests/
+├── front-end/
+│   ├── public/               Icons and the network map
+│   └── src/
+│       ├── components/       The diagram, route strip, charts and shared pieces
+│       ├── lib/              The crowd model, diagram layout and helpers
+│       ├── pages/            One file per page
+│       └── test/
+└── docs/screenshots/
 ```
 
----
+## Limits
 
-## API Reference
+- **Crowd levels are simulated**, as described above. They are not measurements.
+- **Fares are estimates.** They use ₹10 to ₹90 slabs based on the number of stations, not the official fare table.
+- **Travel times are estimates**, at 2.2 minutes per stop and 5 minutes per change.
+- **Service hours are fixed values** in the station data, not a live timetable.
+- **The Pink and Blue lines are not in the planner**, though they appear on the network map.
 
-### Authentication
+## Roadmap
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register a new user |
-| POST | `/api/auth/login` | Authenticate and receive a token |
+- Add the Pink and Blue lines
+- Use the official fare table
+- Replace the crowd model with live data if a public feed appears
+- Add notifications for service delays
+- Build a React Native app
 
-### Stations
+## Credits
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/stations` | Retrieve all stations |
-| GET | `/api/stations/:id` | Retrieve details of a specific station |
-
-### Routes
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/routes` | Retrieve all available routes |
-| POST | `/api/routes/search` | Search for routes between two stations |
-| POST | `/api/routes/favorite` | Save a route as a favorite |
-| GET | `/api/routes/favorites` | Retrieve the user's saved favorite routes |
-
-### Journey History
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/journeys` | Log a completed journey |
-| GET | `/api/journeys` | Retrieve the user's journey history |
-
----
-
-## Authentication
-
-The application uses JSON Web Tokens (JWT) for stateless, secure authentication.
-
-- Passwords are hashed using **bcrypt** prior to storage.
-- A JWT token is issued upon successful login.
-- All protected routes require the token to be included in the `Authorization` header as follows:
-
-```
-Authorization: Bearer <token>
-```
-
----
-
-## Contributing
-
-Contributions are welcome. To contribute:
-
-1. Fork the repository.
-2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Commit your changes: `git commit -m 'Add your feature description'`
-4. Push to the branch: `git push origin feature/your-feature-name`
-5. Open a Pull Request for review.
-
----
+The network map in [`front-end/public/map.jpeg`](front-end/public/map.jpeg) is © Nihar Thakkar and is not covered by this project's license. MetroPulse is an independent project and is not affiliated with BMRCL.
 
 ## License
 
-This project is licensed under the MIT License. Refer to the `LICENSE` file for full terms.
-
----
-
-## Author
-
-**Shriram60**  
-GitHub: [github.com/Shriram60](https://github.com/Shriram60)
-
----
-
-## Support
-
-For bug reports or feature requests, please open an issue on the GitHub repository.
-
----
-
-## Planned Enhancements
-
-- Real-time transit updates
-- Push notifications for service delays
-- Mobile application (React Native)
-- Integration with live metro APIs
-- Advanced analytics dashboard
-- Social sharing capabilities
+[MIT](LICENSE), by [Shriram Chandrasekar](https://github.com/Shriram60).
