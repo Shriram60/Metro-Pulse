@@ -3,7 +3,7 @@
 const bcrypt = require('bcryptjs');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
-const DEMO_EMAIL = 'demo@metropulse.dev';
+const DEMO_EMAIL = 'demo@example.com';
 const DEMO_PASSWORD = 'metropulse';
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -36,7 +36,6 @@ async function seedDemoData() {
   const user = await User.create({
     username: 'demo',
     email: DEMO_EMAIL,
-    phone: '+91 98765 43210',
     homeStation: 'PL16',
     password: await bcrypt.hash(DEMO_PASSWORD, 10),
   });

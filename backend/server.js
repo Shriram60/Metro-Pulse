@@ -12,8 +12,12 @@ async function start() {
   console.log('MongoDB connected');
   await seedStations();
 
-  return createApp().listen(port, () => {
-    console.log(`API running at http://localhost:${port}/api`);
+  return new Promise((resolve, reject) => {
+    const server = createApp().listen(port, () => {
+      console.log(`API running at http://localhost:${port}/api`);
+      resolve(server);
+    });
+    server.once('error', reject);
   });
 }
 
