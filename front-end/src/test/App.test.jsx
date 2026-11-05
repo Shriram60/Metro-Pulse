@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
 
@@ -128,6 +128,96 @@ test('a late trip warns about the connection it would miss', async () => {
   const notice = await screen.findByRole('alert');
   expect(notice).toHaveTextContent('The Green Line runs from 5:30 AM to 11:30 PM');
   expect(notice).not.toHaveTextContent('Purple Line');
+});
+
+test('changing the trip clears the old route', async () => {
+  mockServer({ 'GET /routes/plan': () => json(route) });
+  window.location.hash = '#/planner?from=PL22&to=GL18&at=09:00';
+  render(<App />);
+  await screen.findByRole('heading', { name: 'Central College to Chickpete' });
+
+  await userEvent.selectOptions(screen.getByLabelText('To'), 'YL02');
+
+  expect(screen.queryByRole('heading', { name: 'Central College to Chickpete' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Save to favorites' })).not.toBeInTheDocument();
+  expect(screen.getByText('Select Find route to see this trip.')).toBeInTheDocument();
+});
+
+test('swapping the stations clears the old route', async () => {
+  mockServer({ 'GET /routes/plan': () => json(route) });
+  window.location.hash = '#/planner?from=PL22&to=GL18&at=09:00';
+  render(<App />);
+  await screen.findByRole('heading', { name: 'Central College to Chickpete' });
+
+  await userEvent.click(screen.getByRole('button', { name: 'Swap stations' }));
+
+  expect(screen.getByLabelText('From')).toHaveValue('GL18');
+  expect(screen.queryByRole('heading', { name: 'Central College to Chickpete' })).not.toBeInTheDocument();
+});
+
+test('a route that arrives after the trip changed is ignored', async () => {
+  let respond;
+  mockServer({ 'GET /routes/plan': () => new Promise((resolve) => { respond = resolve; }) });
+  window.location.hash = '#/planner';
+  render(<App />);
+  await screen.findByRole('heading', { name: 'Plan a trip' });
+
+  await userEvent.selectOptions(screen.getByLabelText('From'), 'PL22');
+  await userEvent.selectOptions(screen.getByLabelText('To'), 'GL18');
+  await userEvent.click(screen.getByRole('button', { name: 'Find route' }));
+  await userEvent.selectOptions(screen.getByLabelText('To'), 'YL02');
+
+  await act(async () => {
+    respond({ ok: true, status: 200, json: () => Promise.resolve(route) });
+  });
+
+  expect(screen.queryByRole('heading', { name: 'Central College to Chickpete' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Find route' })).toBeEnabled();
+});
+
+test('an expired session logs you out and asks you to log in again', async () => {
+  localStorage.setItem('token', 'old');
+  mockServer({
+    'GET /auth/me': () => json({ username: 'asha' }),
+    'GET /favorites': () => json({ message: 'Your session has expired, log in again' }, 401),
+  });
+  window.location.hash = '#/favorites';
+  render(<App />);
+
+  expect(await screen.findByText('Log in to see the routes you have saved.')).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'asha' })).not.toBeInTheDocument();
+  expect(screen.getByText('Your session has expired. Log in again.')).toBeInTheDocument();
+  expect(localStorage.getItem('token')).toBeNull();
+});
+
+test('a wrong password is not treated as an expired session', async () => {
+  localStorage.setItem('token', 'saved');
+  mockServer({
+    'GET /auth/me': () => json({ message: 'Server error' }, 500),
+    'POST /auth/login': () => json({ message: 'Incorrect email or password' }, 401),
+  });
+  render(<App />);
+  await screen.findByRole('heading', { name: 'Bangalore metro right now' });
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Log in' }));
+  const dialog = screen.getByRole('dialog', { hidden: true });
+  await userEvent.type(within(dialog).getByLabelText('Email'), 'asha@example.com');
+  await userEvent.type(within(dialog).getByLabelText('Password'), 'nope');
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Log in' }));
+
+  expect(await within(dialog).findByRole('alert')).toHaveTextContent('Incorrect email or password');
+  expect(screen.queryByText(/session has expired/)).not.toBeInTheDocument();
+  expect(localStorage.getItem('token')).toBe('saved');
+});
+
+test('the diagram exposes each station as a named link', async () => {
+  mockServer();
+  render(<App />);
+  await screen.findByRole('heading', { name: 'Bangalore metro right now' });
+
+  const link = screen.getByRole('link', { name: /^Chickpete, Green Line, .*Plan a trip from here/ });
+  expect(link).toHaveAttribute('href', '#/planner?from=GL18');
+  expect(screen.getByRole('group', { name: /Network diagram/ })).toBeInTheDocument();
 });
 
 test('station search filters the list', async () => {
