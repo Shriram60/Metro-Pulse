@@ -5,7 +5,7 @@ A trip planner for the Bangalore metro. It finds your route across the network, 
 [![CI](https://github.com/Shriram60/Metro-Pulse/actions/workflows/ci.yml/badge.svg)](https://github.com/Shriram60/Metro-Pulse/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![React](https://img.shields.io/badge/React-19-149eca)
-![Node](https://img.shields.io/badge/Node-20%2B-3c873a)
+![Node](https://img.shields.io/badge/Node-22.12%2B-3c873a)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-13aa52)
 
 ![The MetroPulse home page, showing a diagram of the three metro lines with a halo around each station sized by its crowd](docs/screenshots/home.png)
@@ -58,7 +58,7 @@ These come from the running demo, with the browser clock set to a weekday at 6:1
 
 ## Run it
 
-You need [Node.js](https://nodejs.org) 20 or newer.
+You need [Node.js](https://nodejs.org) 22.12 or newer.
 
 ### Quick demo
 
@@ -82,6 +82,7 @@ Open the address printed by Vite, usually <http://localhost:3000>, and log in wi
 Copy the example settings and fill them in:
 
 ```bash
+npm run setup
 cp backend/.env.example backend/.env
 npm run dev
 ```
@@ -95,7 +96,7 @@ The stations are added to an empty database the first time the server starts.
 | `PORT` | `backend/.env` | API port, 5000 by default |
 | `VITE_API_URL` | `front-end/.env` | Only needed if the API is on another host |
 
-If port 5000 is taken, as it often is on a Mac, run `PORT=5001 npm run demo`. In PowerShell, run `$env:PORT=5001; npm run demo`.
+If port 5000 is taken, as it often is on a Mac, set `PORT` in `backend/.env`, or for the demo run `PORT=5001 npm run demo`. In PowerShell, run `$env:PORT=5001; npm run demo`.
 
 ### Tests
 
@@ -103,7 +104,7 @@ If port 5000 is taken, as it often is on a Mac, run `PORT=5001 npm run demo`. In
 npm test
 ```
 
-The backend tests run the API against a real in-memory MongoDB and cover the route planner, validation, and users being unable to reach each other's data. The frontend tests cover the crowd model and the main flows in the interface. GitHub Actions runs both, plus a production build, on every push to `main` and every pull request.
+The backend tests run the API against a real in-memory MongoDB and cover the route planner, validation, and users being unable to reach each other's data. The frontend tests cover the crowd model and the main flows in the interface. GitHub Actions runs both on Node 22 and 24, plus a production build, on every push to `main` and every pull request.
 
 ## How it works
 

@@ -5,7 +5,7 @@
   "description": "A trip planner for the Bangalore metro",
   "license": "MIT",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12"
   },
   "scripts": {
     "setup": "npm install && npm install --prefix backend && npm install --prefix front-end",
